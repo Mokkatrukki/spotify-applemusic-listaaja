@@ -1,9 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const loginButton = document.getElementById('login-button');
+  // Remove the old login button event listener
+  // const loginButton = document.getElementById('login-button');
   
-  loginButton.addEventListener('click', () => {
-    alert('Authentication feature coming soon!');
-  });
+  // loginButton.addEventListener('click', () => {
+  //   alert('Authentication feature coming soon!');
+  // });
   
   // Check server health
   fetch('/api/health')

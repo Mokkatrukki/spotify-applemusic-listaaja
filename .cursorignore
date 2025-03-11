@@ -1,0 +1,4 @@
+.env*
+.tfvars*
+*secrets.yaml
+tox.ini

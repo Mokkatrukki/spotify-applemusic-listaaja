@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Spotify to Apple Music</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .playlist-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+    
+    .playlist-card {
+      background-color: #282828;
+      border-radius: 8px;
+      padding: 15px;
+      transition: all 0.3s ease;
+    }
+    
+    .playlist-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .playlist-image {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    
+    .playlist-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: white;
+    }
+    
+    .playlist-tracks {
+      color: #b3b3b3;
+      font-size: 14px;
+    }
+    
+    .transfer-btn {
+      margin-top: 10px;
+      width: 100%;
+      background-color: #1DB954;
+      color: white;
+      border: none;
+      padding: 8px;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .transfer-btn:hover {
+      background-color: #1ed760;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+    
+    .logout-btn {
+      margin-left: auto;
+      background-color: transparent;
+      border: 1px solid #b3b3b3;
+      color: #b3b3b3;
+      padding: 8px 16px;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .logout-btn:hover {
+      border-color: white;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="user-info">
+      <img id="user-avatar" class="user-avatar" src="https://via.placeholder.com/40" alt="User avatar">
+      <span id="user-name">Loading...</span>
+      <a href="/logout" class="logout-btn">Logout</a>
+    </div>
+    
+    <h1>Your Spotify Playlists</h1>
+    <p>Select the playlists you want to transfer to Apple Music.</p>
+    
+    <div id="playlist-container" class="playlist-container">
+      <p>Loading your playlists...</p>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Fetch user profile
+      fetch('/api/spotify/me')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('user-name').textContent = data.display_name;
+          if (data.images && data.images.length > 0) {
+            document.getElementById('user-avatar').src = data.images[0].url;
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching user profile:', error);
+        });
+      
+      // Fetch playlists
+      fetch('/api/spotify/playlists')
+        .then(response => response.json())
+        .then(data => {
+          const playlistContainer = document.getElementById('playlist-container');
+          playlistContainer.innerHTML = '';
+          
+          if (data.items && data.items.length > 0) {
+            data.items.forEach(playlist => {
+              const playlistCard = document.createElement('div');
+              playlistCard.className = 'playlist-card';
+              
+              const imageUrl = playlist.images && playlist.images.length > 0 
+                ? playlist.images[0].url 
+                : 'https://via.placeholder.com/150';
+              
+              playlistCard.innerHTML = `
+                <img class="playlist-image" src="${imageUrl}" alt="${playlist.name}">
+                <div class="playlist-title">${playlist.name}</div>
+                <div class="playlist-tracks">${playlist.tracks.total} tracks</div>
+                <button class="transfer-btn" data-id="${playlist.id}">Transfer to Apple Music</button>
+              `;
+              
+              playlistContainer.appendChild(playlistCard);
+            });
+            
+            // Add event listeners to transfer buttons
+            document.querySelectorAll('.transfer-btn').forEach(button => {
+              button.addEventListener('click', (e) => {
+                const playlistId = e.target.getAttribute('data-id');
+                alert(`Transfer functionality for playlist ${playlistId} coming soon!`);
+              });
+            });
+          } else {
+            playlistContainer.innerHTML = '<p>No playlists found.</p>';
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching playlists:', error);
+          document.getElementById('playlist-container').innerHTML = 
+            '<p>Error loading playlists. Please try again later.</p>';
+        });
+    });
+  </script>
+</body>
+</html> 

@@ -1,9 +1,13 @@
-import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
-import path from 'path';
 
-// Load environment variables
+// Load environment variables - this should be the first thing in your app
 dotenv.config();
+
+import express, { Request, Response } from 'express';
+import path from 'path';
+import cookieSession from 'cookie-session';
+import authRoutes from './routes/auth-routes';
+import spotifyRoutes from './routes/spotify-routes';
 
 // Initialize Express app
 const app = express();
@@ -14,9 +18,36 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 
+// Session middleware
+app.use(cookieSession({
+  name: 'session',
+  keys: [process.env.SESSION_SECRET || 'spotify-apple-music-secret'],
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
+
+// Extend the Request type to include session
+declare module 'express-serve-static-core' {
+  interface Request {
+    session: any;
+  }
+}
+
 // Routes
+app.use('/', authRoutes);
+app.use('/api/spotify', spotifyRoutes);
+
+// Home route
 app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World! Welcome to Spotify to Apple Music Playlist Transfer');
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// Dashboard route (protected)
+app.get('/dashboard', (req: Request, res: Response) => {
+  if (!req.session || !req.session.tokens) {
+    return res.redirect('/');
+  }
+  
+  res.sendFile(path.join(__dirname, '../public/dashboard.html'));
 });
 
 // API health check
